@@ -3,28 +3,32 @@ package com.example.a15piecepuzzle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-public class gameActivity extends AppCompatActivity {
+import java.io.IOException;
+import java.io.InputStream;
+
+public class GameActivity extends AppCompatActivity {
 
     private ImageView test;
     private Button btnBack;
     private Uri imgUri;
+    private Bitmap bitmap;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-
         test = findViewById(R.id.imageView);
-
         Intent intent = getIntent();
         imgUri = Uri.parse(intent.getStringExtra("imgUri"));
-        test.setImageURI(imgUri);
 
 
         //End Game or return
@@ -36,5 +40,18 @@ public class gameActivity extends AppCompatActivity {
             }
         });
 
+        //Image to bitmap
+        try {
+            bitmap = getImageFromUri(imgUri);
+            test.setImageBitmap(bitmap);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
+
+    private Bitmap getImageFromUri(Uri uri) throws IOException {
+        return MediaStore.Images.Media.getBitmap(this.getContentResolver(),uri);
+    }
+
 }

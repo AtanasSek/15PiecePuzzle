@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
         //Open Gallery
         btnOpenGallery.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,9 +51,7 @@ public class MainActivity extends AppCompatActivity {
                 openGallery(v);
             }
         });
-
     }
-
 
     //Get URI from gallery selection
     @Override
@@ -71,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startGame(){
-        Intent intent = new Intent(MainActivity.this,gameActivity.class);
+        Intent intent = new Intent(MainActivity.this, GameActivity.class);
         intent.putExtra("imgUri",imgData.toString());
         MainActivity.this.startActivity(intent);
     }
