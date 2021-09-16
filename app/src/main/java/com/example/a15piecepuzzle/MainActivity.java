@@ -69,13 +69,6 @@ public class MainActivity extends AppCompatActivity {
         galleryImgView = findViewById(R.id.galleryImageView);
         txtWarning = findViewById(R.id.txtWarning);
 
-        activityResultLauncher = registerForActivityResult(cropActivityResultContract , new ActivityResultCallback<Uri>() {
-            @Override
-            public void onActivityResult(Uri result) {
-                galleryImgView = findViewById(R.id.galleryImageView);
-                galleryImgView.setImageURI(result);
-            }
-        });
 
         //Start game
         btnStart.setOnClickListener(new View.OnClickListener() {
@@ -93,10 +86,7 @@ public class MainActivity extends AppCompatActivity {
         btnOpenGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
-                activityResultLauncher.launch(null);
-                //openGallery(v);
+                openGallery(v);
             }
         });
     }
@@ -111,7 +101,23 @@ public class MainActivity extends AppCompatActivity {
             imgData = data.getData();
             galleryImgView.setImageURI(imgData);
 
-            //crop function here
+            CropImage.activity(imgData)
+                    .setAspectRatio(1,1)
+                    .start(this);
+
+        }
+
+        //crop function here
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                imgData = result.getUri();
+
+                galleryImgView.setImageURI(imgData);
+
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+            }
         }
     }
 
