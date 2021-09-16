@@ -50,6 +50,11 @@ public class GameActivity extends AppCompatActivity {
 
     }
 
+
+    private Bitmap cropImage(Bitmap bitmap){
+        return Bitmap.createBitmap(bitmap,0,0, 500,1000); //samo test, sepak ke se koristi 3rd party library
+    }
+
     private Bitmap getImageFromUri(Uri uri) throws IOException {
         return MediaStore.Images.Media.getBitmap(this.getContentResolver(),uri);
     }

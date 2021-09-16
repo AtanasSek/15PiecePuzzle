@@ -1,8 +1,15 @@
 package com.example.a15piecepuzzle;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityOptionsCompat;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,6 +17,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.theartofdev.edmodo.cropper.CropImage;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,6 +30,34 @@ public class MainActivity extends AppCompatActivity {
 
     private static int SELECT_IMAGE = 2;
 
+    private ActivityResultLauncher <Object> activityResultLauncher;
+
+    private ActivityResultContract<Object, Uri> cropActivityResultContract = new ActivityResultContract<Object ,Uri>() {
+        @NonNull
+        @Override
+        public Intent createIntent(@NonNull Context context, Object input) {
+            return CropImage.activity()
+                    .setAspectRatio(1,1)
+                    .getIntent(MainActivity.this);
+        }
+
+        @Override
+        public Uri parseResult(int resultCode, @Nullable Intent intent) {
+
+            if(intent == null)
+                return null;
+
+
+            Uri uri = CropImage.getActivityResult(intent).getUri();
+
+
+            if(uri != null)
+                return uri;
+
+            return null;
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +68,14 @@ public class MainActivity extends AppCompatActivity {
         btnOpenGallery = findViewById(R.id.btnGallery);
         galleryImgView = findViewById(R.id.galleryImageView);
         txtWarning = findViewById(R.id.txtWarning);
+
+        activityResultLauncher = registerForActivityResult(cropActivityResultContract , new ActivityResultCallback<Uri>() {
+            @Override
+            public void onActivityResult(Uri result) {
+                galleryImgView = findViewById(R.id.galleryImageView);
+                galleryImgView.setImageURI(result);
+            }
+        });
 
         //Start game
         btnStart.setOnClickListener(new View.OnClickListener() {
@@ -48,7 +93,10 @@ public class MainActivity extends AppCompatActivity {
         btnOpenGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openGallery(v);
+
+
+                activityResultLauncher.launch(null);
+                //openGallery(v);
             }
         });
     }
@@ -60,10 +108,10 @@ public class MainActivity extends AppCompatActivity {
 
         if(requestCode == SELECT_IMAGE && resultCode == RESULT_OK && data != null){
             galleryImgView = findViewById(R.id.galleryImageView);
-
             imgData = data.getData();
             galleryImgView.setImageURI(imgData);
 
+            //crop function here
         }
     }
 
