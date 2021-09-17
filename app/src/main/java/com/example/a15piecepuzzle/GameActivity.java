@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
 
 import java.io.IOException;
@@ -34,30 +35,17 @@ public class GameActivity extends AppCompatActivity {
 
     private ImageView test;
     private Button btnBack;
-    private Uri imgUri;
-    private Bitmap bitmap;
+    private Uri imgUri; //image-ot dobien od prethodnoto activity
+    private Bitmap bitmap; //istiot image, konvertiran vo bitmap
 
-    ArrayList<ArrayList<Bitmap>> puzzle = new ArrayList<ArrayList<Bitmap>>();
 
-    /*public const int PUZZLE_SIZE = 3; // 3*3 = 9 pieces, 4*4 = 16 pieces (classic 15 puzzle)
+    public int PUZZLE_SIZE = 4;
+    //ArrayList<ArrayList<Bitmap>> puzzle = new ArrayList<ArrayList<Bitmap>>();
+    ArrayList<ArrayList<PuzzlePiece>> puzzle = new ArrayList<ArrayList<PuzzlePiece>>();
+    int h = bitmap.getHeight()/PUZZLE_SIZE;
+    int w = bitmap.getWidth()/PUZZLE_SIZE;
 
-    Bitmap bm; // go imash od image pickerot
-
-    int h = bm.Height/PUZZLE_SIZE; // Valjda ne e samo .Height ali sigurno postoi neshto takvo
-    int w = bm.Width/PUZZLE_SIZE;
-
-    Array<Array<Bitmap>> puzzle = new Array<Array<Bitmap>> puzzle;
-
-for(int i = 0; i < PUZZLE_SIZE ; i++)
-    {
-        puzzle.push(new Array<Bitmap>); // Dodadi empty row
-        for(int j = 0; j < PUZZLE_SIZE; j++)
-        {
-            puzzle[i].push(Bitmap.createBitmap(bm, i*w, j*h, w, h))
-        }
-    }
-// na kraj imash matrica puzzle kajshto puzzle[0][0] ti e prviot piece vo kjosh gore levo, puzzle[0][1] e vtoriot and so on...
-*/
+    GridView puzzleGridView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +55,8 @@ for(int i = 0; i < PUZZLE_SIZE ; i++)
         Intent intent = getIntent();
         imgUri = Uri.parse(intent.getStringExtra("imgUri"));
 
+        puzzleGridView = findViewById(R.id.puzzleGridView);
+        puzzleGridView.setAdapter(new PuzzleAdapter(GameActivity.this,puzzle));
 
         //End Game or return
         btnBack = findViewById(R.id.btnBack);
@@ -77,16 +67,17 @@ for(int i = 0; i < PUZZLE_SIZE ; i++)
             }
         });
 
-        //Image to bitmap
+        //Image to bitmap and fill puzzle
         try {
             bitmap = getImageFromUri(imgUri);
             test.setImageBitmap(bitmap);
+
+            fillPuzzle();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
-
 
     private Bitmap cropImage(Bitmap bitmap){
         return Bitmap.createBitmap(bitmap,0,0, 500,1000); //samo test, sepak ke se koristi 3rd party library
@@ -94,6 +85,34 @@ for(int i = 0; i < PUZZLE_SIZE ; i++)
 
     private Bitmap getImageFromUri(Uri uri) throws IOException {
         return MediaStore.Images.Media.getBitmap(this.getContentResolver(),uri);
+    }
+
+
+    // na kraj imash matrica puzzle kajshto puzzle[0][0] ti e prviot piece vo kjosh gore levo, puzzle[0][1] e vtoriot and so on...
+    /*  Orginalniot kod
+     for(int i = 0; i < PUZZLE_SIZE ; i++)
+        {
+            puzzle.add(new ArrayList<Bitmap>()); // Dodadi empty row
+            for(int j = 0; j < PUZZLE_SIZE; j++)
+            {
+                puzzle.get(i).add(Bitmap.createBitmap(bitmap, i*w, j*h, w, h));
+            }
+        }
+    */
+
+    private void fillPuzzle(){
+        for(int i = 0; i < PUZZLE_SIZE ; i++)
+        {
+            puzzle.add(new ArrayList<PuzzlePiece>()); // Dodadi empty row
+            for(int j = 0; j < PUZZLE_SIZE; j++)
+            {
+                Bitmap bm = Bitmap.createBitmap(bitmap, i*w, j*h, w, h);
+                puzzle.get(i).add(new PuzzlePiece(bm,i,i));
+                //Ideata e da go napolni puzzle-ot vo orginalna sostojba pa posle da go shufflene, zatoa bm,i,i
+            }
+        }
+
+
     }
 
 }
