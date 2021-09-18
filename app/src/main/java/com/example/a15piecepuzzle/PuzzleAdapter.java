@@ -4,34 +4,35 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
 
+import static com.example.a15piecepuzzle.GameActivity.PUZZLE_SIZE;
+
 public class PuzzleAdapter extends BaseAdapter {
 
     private Context context;
-    public ArrayList<ArrayList<PuzzlePiece>> puzzlePieceIDs;
+    public ArrayList<ArrayList<PuzzlePiece>> puzzlePieces;
 
-    public PuzzleAdapter(Context context, ArrayList<ArrayList<PuzzlePiece>> puzzlePieceIDs) {
+    public PuzzleAdapter(Context context, ArrayList<ArrayList<PuzzlePiece>> puzzlePieces) {
         this.context = context;
-        this.puzzlePieceIDs = puzzlePieceIDs;
+        this.puzzlePieces = puzzlePieces;
     }
 
     @Override
     public int getCount() {
-        return puzzlePieceIDs.size();
+        return PUZZLE_SIZE * PUZZLE_SIZE;
     }
 
     @Override
-    public Object getItem(int position) {
-        return puzzlePieceIDs.get(position);
+    public PuzzlePiece getItem(int position) {
+        return puzzlePieces.get(position / PUZZLE_SIZE).get(position % PUZZLE_SIZE);
     }
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
@@ -45,9 +46,7 @@ public class PuzzleAdapter extends BaseAdapter {
         else{
             puzzlePiece = (ImageView) convertView;
         }
-        //puzzlePiece.setImageResource(puzzlePieceIDs.get(position)); //oh oh, what now
-        //puzzlePiece.setImageBitmap();
-        // TODO: brain stopped, treba integracija za array, so .get(position) samo redot go dobivam, a ne individualnata pozicija na puzzlepiece
+        puzzlePiece.setImageBitmap(this.getItem(position).getImg());
         return puzzlePiece;
     }
 }

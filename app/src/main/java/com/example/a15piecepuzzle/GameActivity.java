@@ -13,37 +13,23 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 
-class PuzzlePiece{
-    private Bitmap img;
-    private int currentPos;
-    private int solvedPos;
-
-    public PuzzlePiece(Bitmap img, int currentPos, int solvedPos) {
-        this.img = img;
-        this.currentPos = currentPos;
-        this.solvedPos = solvedPos;
-    }
-
+public class GameActivity extends AppCompatActivity {
+    
     //https://developer.android.com/guide/topics/ui/declaring-layout.html#AdapterViews
     //https://github.com/ArthurHub/Android-Image-Cropper
-}
 
-public class GameActivity extends AppCompatActivity {
-
-    private ImageView test;
+    private ImageView imageView;
     private Button btnBack;
     private Uri imgUri; //image-ot dobien od prethodnoto activity
     private Bitmap bitmap; //istiot image, konvertiran vo bitmap
 
 
-    public int PUZZLE_SIZE = 4;
+    public static int PUZZLE_SIZE = 4;
     //ArrayList<ArrayList<Bitmap>> puzzle = new ArrayList<ArrayList<Bitmap>>();
     ArrayList<ArrayList<PuzzlePiece>> puzzle = new ArrayList<ArrayList<PuzzlePiece>>();
-    int h = bitmap.getHeight()/PUZZLE_SIZE;
-    int w = bitmap.getWidth()/PUZZLE_SIZE;
+    int h, w;
 
     GridView puzzleGridView;
 
@@ -51,11 +37,12 @@ public class GameActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-        test = findViewById(R.id.imageView);
+        imageView = findViewById(R.id.imageView);
         Intent intent = getIntent();
         imgUri = Uri.parse(intent.getStringExtra("imgUri"));
 
         puzzleGridView = findViewById(R.id.puzzleGridView);
+        puzzleGridView.setColumnWidth(PUZZLE_SIZE);
         puzzleGridView.setAdapter(new PuzzleAdapter(GameActivity.this,puzzle));
 
         //End Game or return
@@ -70,17 +57,16 @@ public class GameActivity extends AppCompatActivity {
         //Image to bitmap and fill puzzle
         try {
             bitmap = getImageFromUri(imgUri);
-            test.setImageBitmap(bitmap);
+            imageView.setImageBitmap(bitmap);
+    
+            h = bitmap.getHeight()/PUZZLE_SIZE;
+            w = bitmap.getWidth()/PUZZLE_SIZE;
 
             fillPuzzle();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-    }
-
-    private Bitmap cropImage(Bitmap bitmap){
-        return Bitmap.createBitmap(bitmap,0,0, 500,1000); //samo test, sepak ke se koristi 3rd party library
     }
 
     private Bitmap getImageFromUri(Uri uri) throws IOException {
@@ -107,7 +93,7 @@ public class GameActivity extends AppCompatActivity {
             for(int j = 0; j < PUZZLE_SIZE; j++)
             {
                 Bitmap bm = Bitmap.createBitmap(bitmap, i*w, j*h, w, h);
-                puzzle.get(i).add(new PuzzlePiece(bm,i,i));
+                puzzle.get(i).add(new PuzzlePiece(bm,i*PUZZLE_SIZE,i * PUZZLE_SIZE + j + 1));
                 //Ideata e da go napolni puzzle-ot vo orginalna sostojba pa posle da go shufflene, zatoa bm,i,i
             }
         }
