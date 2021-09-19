@@ -42,6 +42,8 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <GridView
+
+            android:listSelector="#0098D4"
             android:gravity="center"
             android:verticalSpacing="5dp"
             android:horizontalSpacing="-20dp"

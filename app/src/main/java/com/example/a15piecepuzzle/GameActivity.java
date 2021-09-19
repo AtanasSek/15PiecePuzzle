@@ -4,16 +4,23 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorSpace;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class GameActivity extends AppCompatActivity {
     
@@ -26,12 +33,14 @@ public class GameActivity extends AppCompatActivity {
     private Bitmap bitmap; //istiot image, konvertiran vo bitmap
 
 
-    public static int PUZZLE_SIZE = 4;
+    public static int PUZZLE_SIZE = 4; //puzzle_size = 3 ne raboti, pretpostavuvam i so drugi vrednosti nema
     //ArrayList<ArrayList<Bitmap>> puzzle = new ArrayList<ArrayList<Bitmap>>();
     ArrayList<ArrayList<PuzzlePiece>> puzzle = new ArrayList<ArrayList<PuzzlePiece>>();
     int h, w;
 
     GridView puzzleGridView;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +54,9 @@ public class GameActivity extends AppCompatActivity {
         puzzleGridView.setNumColumns(PUZZLE_SIZE);
         puzzleGridView.setVerticalScrollBarEnabled(false); //dont work
         puzzleGridView.setHorizontalScrollBarEnabled(false); //dont work
-        puzzleGridView.setAdapter(new PuzzleAdapter(GameActivity.this,puzzle));
+        PuzzleAdapter puzzleAdapter = new PuzzleAdapter(GameActivity.this,puzzle);
+        puzzleGridView.setAdapter(puzzleAdapter);
+
 
         //End Game or return
         btnBack = findViewById(R.id.btnBack);
@@ -55,6 +66,15 @@ public class GameActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        // ova postoi deka ne sakam callbacks da se obiduvam da pravam | ne raboti od x pricini
+        puzzleGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                System.out.println(puzzleAdapter.getItem(position));
+            }
+        });
+
 
         //Image to bitmap and fill puzzle
         try {
@@ -76,31 +96,36 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-    // na kraj imash matrica puzzle kajshto puzzle[0][0] ti e prviot piece vo kjosh gore levo, puzzle[0][1] e vtoriot and so on...
-    /*  Orginalniot kod
-     for(int i = 0; i < PUZZLE_SIZE ; i++)
-        {
-            puzzle.add(new ArrayList<Bitmap>()); // Dodadi empty row
-            for(int j = 0; j < PUZZLE_SIZE; j++)
-            {
-                puzzle.get(i).add(Bitmap.createBitmap(bitmap, i*w, j*h, w, h));
-            }
-        }
-    */
-
     private void fillPuzzle(){
+        ArrayList<Integer> shuffled = new ArrayList(PUZZLE_SIZE*PUZZLE_SIZE);
+        for(int i = 1; i <= PUZZLE_SIZE*PUZZLE_SIZE; i++)
+            shuffled.add(i);
+        
+        Collections.shuffle(shuffled);
+        
         for(int i = 0; i < PUZZLE_SIZE ; i++)
         {
             puzzle.add(new ArrayList<PuzzlePiece>()); // Dodadi empty row
             for(int j = 0; j < PUZZLE_SIZE; j++)
             {
-                Bitmap bm = Bitmap.createBitmap(bitmap, j*w, i*h, w, h);
-                puzzle.get(i).add(new PuzzlePiece(bm,i*PUZZLE_SIZE,i * PUZZLE_SIZE + j + 1));
-                //Ideata e da go napolni puzzle-ot vo orginalna sostojba pa posle da go shufflene
+    
+                if(!(i == PUZZLE_SIZE - 1 && j == PUZZLE_SIZE - 1 ))
+                {
+                    Bitmap bitmap = Bitmap.createBitmap(this.bitmap, j * w, i * h, w, h);
+                    puzzle.get(i).add(new PuzzlePiece(bitmap, shuffled.get(i * PUZZLE_SIZE + j), i * PUZZLE_SIZE + j + 1));
+                }
+                else
+                {
+                    Bitmap blackSquare = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565);
+                    Canvas canvas = new Canvas(blackSquare);
+                    Paint paint = new Paint();
+                    paint.setColor(Color.DKGRAY);
+                    canvas.drawRect(0F, 0F, w, h, paint);
+                    puzzle.get(i).add(new PuzzlePiece(blackSquare,shuffled.get(i * PUZZLE_SIZE + j),i * PUZZLE_SIZE + j + 1));
+                }
+                
             }
         }
-
-
     }
 
 }

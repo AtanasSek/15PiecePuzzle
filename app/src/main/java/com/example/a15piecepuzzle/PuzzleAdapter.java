@@ -14,20 +14,32 @@ public class PuzzleAdapter extends BaseAdapter {
 
     private Context context;
     public ArrayList<ArrayList<PuzzlePiece>> puzzlePieces;
+    private PuzzlePiece selectedPiece;
+
 
     public PuzzleAdapter(Context context, ArrayList<ArrayList<PuzzlePiece>> puzzlePieces) {
         this.context = context;
         this.puzzlePieces = puzzlePieces;
     }
-
+    
     @Override
     public int getCount() {
         return PUZZLE_SIZE * PUZZLE_SIZE;
     }
 
     @Override
-    public PuzzlePiece getItem(int position) {
-        return puzzlePieces.get(position / PUZZLE_SIZE).get(position % PUZZLE_SIZE);
+    public PuzzlePiece getItem(int position)
+    {
+        for(int i = 0; i < PUZZLE_SIZE; i++)
+        {
+            ArrayList<PuzzlePiece> row = puzzlePieces.get(i);
+            for( int j = 0; j < PUZZLE_SIZE; j++)
+            {
+                if (row.get(j).getCurrentPos() == position + 1)
+                    return row.get(j);
+            }
+        }
+        return null;
     }
 
     @Override
@@ -37,16 +49,39 @@ public class PuzzleAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ImageView puzzlePiece;
+        ImageView puzzlePieceView;
         if(convertView == null){
-            puzzlePiece = new ImageView(context);
-            puzzlePiece.setLayoutParams(new ViewGroup.LayoutParams(250,250));
-            puzzlePiece.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            puzzlePieceView = new ImageView(context);
+            puzzlePieceView.setLayoutParams(new ViewGroup.LayoutParams(250,250));
+            puzzlePieceView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         }
         else{
-            puzzlePiece = (ImageView) convertView;
+            puzzlePieceView = (ImageView) convertView;
         }
-        puzzlePiece.setImageBitmap(this.getItem(position).getImg());
-        return puzzlePiece;
+        puzzlePieceView.setImageBitmap(this.getItem(position).getImg());
+
+        //ke mora so callback
+        puzzlePieceView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedPiece = getItem(position);
+
+                if(selectedPiece.getSolvedPos() == PUZZLE_SIZE * PUZZLE_SIZE){
+
+
+                }
+                else{
+
+                }
+
+
+            }
+        });
+        
+        //puzzlePieceView.setOnClickListener();
+        
+        return puzzlePieceView;
     }
+
 }
+
