@@ -67,6 +67,9 @@ public class PuzzleAdapter extends BaseAdapter {
                 selectedPiece = getItem(position);
 
                 if(selectedPiece.getSolvedPos() == PUZZLE_SIZE * PUZZLE_SIZE){
+                    if(selectedPiece.getCurrentPos() % PUZZLE_SIZE == 0){
+                        //validni pozicii levo
+                    }
 
 
                 }
