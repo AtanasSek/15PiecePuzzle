@@ -42,7 +42,9 @@ public class GameActivity extends AppCompatActivity {
         imgUri = Uri.parse(intent.getStringExtra("imgUri"));
 
         puzzleGridView = findViewById(R.id.puzzleGridView);
-        puzzleGridView.setColumnWidth(PUZZLE_SIZE);
+        puzzleGridView.setNumColumns(PUZZLE_SIZE);
+        puzzleGridView.setVerticalScrollBarEnabled(false); //dont work
+        puzzleGridView.setHorizontalScrollBarEnabled(false); //dont work
         puzzleGridView.setAdapter(new PuzzleAdapter(GameActivity.this,puzzle));
 
         //End Game or return
@@ -92,9 +94,9 @@ public class GameActivity extends AppCompatActivity {
             puzzle.add(new ArrayList<PuzzlePiece>()); // Dodadi empty row
             for(int j = 0; j < PUZZLE_SIZE; j++)
             {
-                Bitmap bm = Bitmap.createBitmap(bitmap, i*w, j*h, w, h);
+                Bitmap bm = Bitmap.createBitmap(bitmap, j*w, i*h, w, h);
                 puzzle.get(i).add(new PuzzlePiece(bm,i*PUZZLE_SIZE,i * PUZZLE_SIZE + j + 1));
-                //Ideata e da go napolni puzzle-ot vo orginalna sostojba pa posle da go shufflene, zatoa bm,i,i
+                //Ideata e da go napolni puzzle-ot vo orginalna sostojba pa posle da go shufflene
             }
         }
 
