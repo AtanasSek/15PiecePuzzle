@@ -1,12 +1,14 @@
 package com.example.a15piecepuzzle;
 
+import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 
-class PuzzlePiece
+class PuzzlePiece extends DataSetObserver
 {
     private Bitmap img;
     private int currentPos;
     private int solvedPos;
+    public boolean isHole;
     
     public PuzzlePiece(Bitmap img, int currentPos, int solvedPos)
     {
@@ -30,9 +32,9 @@ class PuzzlePiece
         return currentPos;
     }
     
-    public void setCurrentPos(int currentPos)
+    public void setCurrentPos(int newPos)
     {
-        this.currentPos = currentPos;
+        this.currentPos = newPos;
     }
     
     public int getSolvedPos()
@@ -40,8 +42,9 @@ class PuzzlePiece
         return solvedPos;
     }
     
-    public void setSolvedPos(int solvedPos)
+    @Override
+    public void onChanged()
     {
-        this.solvedPos = solvedPos;
+        super.onChanged();
     }
 }

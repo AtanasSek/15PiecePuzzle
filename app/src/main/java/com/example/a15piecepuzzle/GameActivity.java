@@ -1,19 +1,20 @@
 package com.example.a15piecepuzzle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorSpace;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.AttributeSet;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -33,14 +34,10 @@ public class GameActivity extends AppCompatActivity {
     private Bitmap bitmap; //istiot image, konvertiran vo bitmap
 
 
-    public static int PUZZLE_SIZE = 4; //puzzle_size = 3 ne raboti, pretpostavuvam i so drugi vrednosti nema
-    //ArrayList<ArrayList<Bitmap>> puzzle = new ArrayList<ArrayList<Bitmap>>();
-    ArrayList<ArrayList<PuzzlePiece>> puzzle = new ArrayList<ArrayList<PuzzlePiece>>();
-    int h, w;
-
+    public static int GRID_SIZE = 3;
+    public static int PUZZLE_COUNT = GRID_SIZE * GRID_SIZE;
+    Puzzle puzzle;
     GridView puzzleGridView;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,14 +46,6 @@ public class GameActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imageView);
         Intent intent = getIntent();
         imgUri = Uri.parse(intent.getStringExtra("imgUri"));
-
-        puzzleGridView = findViewById(R.id.puzzleGridView);
-        puzzleGridView.setNumColumns(PUZZLE_SIZE);
-        puzzleGridView.setVerticalScrollBarEnabled(false); //dont work
-        puzzleGridView.setHorizontalScrollBarEnabled(false); //dont work
-        PuzzleAdapter puzzleAdapter = new PuzzleAdapter(GameActivity.this,puzzle);
-        puzzleGridView.setAdapter(puzzleAdapter);
-
 
         //End Game or return
         btnBack = findViewById(R.id.btnBack);
@@ -67,27 +56,29 @@ public class GameActivity extends AppCompatActivity {
             }
         });
 
-        // ova postoi deka ne sakam callbacks da se obiduvam da pravam | ne raboti od x pricini
-        puzzleGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                System.out.println(puzzleAdapter.getItem(position));
-            }
-        });
-
-
         //Image to bitmap and fill puzzle
         try {
             bitmap = getImageFromUri(imgUri);
             imageView.setImageBitmap(bitmap);
-    
-            h = bitmap.getHeight()/PUZZLE_SIZE;
-            w = bitmap.getWidth()/PUZZLE_SIZE;
 
-            fillPuzzle();
+            fillPuzzle(bitmap);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    
+        puzzleGridView = findViewById(R.id.puzzleGridView);
+        puzzleGridView.setNumColumns(GRID_SIZE);
+        puzzleGridView.setVerticalScrollBarEnabled(false); //dont work
+        puzzleGridView.setHorizontalScrollBarEnabled(false); //dont work
+        PuzzleAdapter adapter = new PuzzleAdapter(GameActivity.this, puzzle, new OnMoveCallback() {
+            @Override
+            public void OnMove(PuzzleAdapter oldAdapter)
+            {
+                puzzleGridView.invalidateViews();
+                puzzleGridView.setAdapter(oldAdapter);
+            }
+        });
+        puzzleGridView.setAdapter(adapter);
 
     }
 
@@ -96,35 +87,38 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-    private void fillPuzzle(){
-        ArrayList<Integer> shuffled = new ArrayList(PUZZLE_SIZE*PUZZLE_SIZE);
-        for(int i = 1; i <= PUZZLE_SIZE*PUZZLE_SIZE; i++)
+    // na kraj imash matrica puzzle kajshto puzzle[0][0] ti e prviot piece vo kjosh gore levo, puzzle[0][1] e vtoriot and so on...
+    /*  Orginalniot kod
+     for(int i = 0; i < PUZZLE_SIZE ; i++)
+        {
+            puzzle.add(new ArrayList<Bitmap>()); // Dodadi empty row
+            for(int j = 0; j < PUZZLE_SIZE; j++)
+            {
+                puzzle.get(i).add(Bitmap.createBitmap(bitmap, i*w, j*h, w, h));
+            }
+        }
+    */
+
+    private void fillPuzzle(Bitmap puzzleBitmap){
+        
+        ArrayList<Integer> shuffled = new ArrayList<Integer>();
+        for(int i = 1; i <= PUZZLE_COUNT; i++)
             shuffled.add(i);
+        
+        //todo: check if shuffle is possible
         
         Collections.shuffle(shuffled);
         
-        for(int i = 0; i < PUZZLE_SIZE ; i++)
+        puzzle = new Puzzle(puzzleBitmap, GRID_SIZE, new ArrayList<>(PUZZLE_COUNT), shuffled);
+        
+        for(int i = 0; i < PUZZLE_COUNT; i++)
         {
-            puzzle.add(new ArrayList<PuzzlePiece>()); // Dodadi empty row
-            for(int j = 0; j < PUZZLE_SIZE; j++)
-            {
-    
-                if(!(i == PUZZLE_SIZE - 1 && j == PUZZLE_SIZE - 1 ))
-                {
-                    Bitmap bitmap = Bitmap.createBitmap(this.bitmap, j * w, i * h, w, h);
-                    puzzle.get(i).add(new PuzzlePiece(bitmap, shuffled.get(i * PUZZLE_SIZE + j), i * PUZZLE_SIZE + j + 1));
-                }
-                else
-                {
-                    Bitmap blackSquare = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565);
-                    Canvas canvas = new Canvas(blackSquare);
-                    Paint paint = new Paint();
-                    paint.setColor(Color.DKGRAY);
-                    canvas.drawRect(0F, 0F, w, h, paint);
-                    puzzle.get(i).add(new PuzzlePiece(blackSquare,shuffled.get(i * PUZZLE_SIZE + j),i * PUZZLE_SIZE + j + 1));
-                }
-                
+            Bitmap pieceImg = Bitmap.createBitmap(puzzleBitmap, (i / GRID_SIZE) * puzzle.pieceWidth, (i % GRID_SIZE) * puzzle.pieceHeight, puzzle.pieceWidth, puzzle.pieceHeight);
+            PuzzlePiece puzzlePiece = new PuzzlePiece(pieceImg, shuffled.get(i), i + 1);
+            if(puzzlePiece.getSolvedPos() == PUZZLE_COUNT){
+                puzzlePiece.isHole = true;
             }
+            puzzle.puzzlePieces.add(puzzlePiece);
         }
     }
 
